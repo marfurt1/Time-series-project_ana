@@ -18,21 +18,34 @@ import pickle
 
 # Load datasets
 
+data_test_a = pd.read_csv('https://raw.githubusercontent.com/oreilly-mlsec/book-resources/master/chapter3/datasets/cpu-utilization/cpu-test-a.csv', parse_dates=[0], infer_datetime_format=True,index_col=0)
+data_test_b = pd.read_csv('https://raw.githubusercontent.com/oreilly-mlsec/book-resources/master/chapter3/datasets/cpu-utilization/cpu-test-b.csv', parse_dates=[0], infer_datetime_format=True,index_col=0)
+
+data_test_a.index = pd.to_datetime(data_test_a.index)
+data_test_b.index = pd.to_datetime(data_test_b.index)
 
 
-url_test_a = pd.read_csv('../data/raw/cpu-test-a.csv')
-url_test_b = pd.read_csv('../data/raw/cpu-test-b.csv')
+###############
 
-# change 'datetime' type to 'datetime64'
-test_a['datetime']=test_a['datetime'].astype('datetime64')
-test_b['datetime']=test_b['datetime'].astype('datetime64')
+# load the model from data
+filename = '../models/best_model_a.pkl'
+load_model_a = pickle.load(open(filename, 'rb'))
 
-# Set index
-test_a.set_index('datetime',inplace=True)
-test_b.set_index('datetime',inplace=True)
+predicciones_a=load_model_a.fit_predict(data_test_a,n_periods=60*24)
+
+print('las predicciones para el próximo día de  test a son: {}'.format(predicciones_a))
 
 
-# Save the model as a pickle
 filename = '../models/best_model_b.pkl'
-pickle.dump(stepwise_model, open(filename,'wb'))
+load_model_b = pickle.load(open(filename, 'rb'))
+
+# reentreno el modelo con la ventana móvil (historial)
+predicciones_b=load_model_b.fit_predict(data_test_b,n_periods=60*24)
+
+print('las predicciones para el próximo día de  test b son: {}'.format(predicciones_b))
+
+
+
+
+
 
